@@ -13,7 +13,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     connect(ui->load_image_btn, SIGNAL(clicked(bool)), this, SLOT(load_image_pushed()));
-    connect(ui->test_slider, SIGNAL(valueChanged(int)), SLOT(test_slider_changed(int)));
+    connect(ui->gamma_slider, SIGNAL(valueChanged(int)), SLOT(gamma_slider_changed(int)));
+    connect(ui->contrast_slider, SIGNAL(valueChanged(int)), SLOT(contrast_slider_changed(int)));
+    connect(ui->brightness_slider, SIGNAL(valueChanged(int)), SLOT(brightness_slider_changed(int)));
 
 }
 
@@ -45,14 +47,31 @@ void MainWindow::load_image_pushed(){
     ui->orignal_image->setPixmap(pixmap);
 }
 
-void MainWindow::test_slider_changed(int value){
+void MainWindow::apply_changes(){
     if(original_image.isNull()){
         return;
     }
 
     QImage local_image = QImage(original_image);
 
-    run_algorithm(original_image, local_image, AlgorithmArgs{ value });
+    run_algorithm(original_image, local_image, AlgorithmArgs{ d_brightness, d_contrast, d_gamma });
 
     ui->edited_image->setPixmap(QPixmap::fromImage(local_image));
 }
+
+void MainWindow::brightness_slider_changed(int value){
+    d_brightness = value;
+    apply_changes();
+}
+
+void MainWindow::contrast_slider_changed(int value){
+    d_contrast = value;
+    apply_changes();
+}
+
+void MainWindow::gamma_slider_changed(int value){
+    d_gamma = value;
+    apply_changes();
+}
+
+

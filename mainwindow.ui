@@ -67,16 +67,64 @@
       <number>10</number>
      </property>
      <item>
-      <layout class="QHBoxLayout" name="control_entry">
+      <layout class="QHBoxLayout" name="control_entry_3">
        <item>
-        <widget class="QLabel" name="test_slider_label">
+        <widget class="QLabel" name="test_slider_label_3">
          <property name="text">
-          <string>Test silder</string>
+          <string>Brightness</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="test_slider">
+        <widget class="QSlider" name="brightness_slider">
+         <property name="minimum">
+          <number>-255</number>
+         </property>
+         <property name="maximum">
+          <number>255</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="control_entry_2">
+       <item>
+        <widget class="QLabel" name="test_slider_label_2">
+         <property name="text">
+          <string>Contrast</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="contrast_slider">
+         <property name="minimum">
+          <number>-255</number>
+         </property>
+         <property name="maximum">
+          <number>255</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="control_entry">
+       <item>
+        <widget class="QLabel" name="test_slider_label">
+         <property name="text">
+          <string>Gamma</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="gamma_slider">
          <property name="minimum">
           <number>-255</number>
          </property>

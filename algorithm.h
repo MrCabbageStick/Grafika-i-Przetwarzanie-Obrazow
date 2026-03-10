@@ -5,6 +5,8 @@
 
 struct AlgorithmArgs{
     int brightness;
+    int contrast;
+    int gamma;
 };
 
 struct BGRA{

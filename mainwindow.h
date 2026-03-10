@@ -15,6 +15,10 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     QImage original_image;
 
+    int d_brightness = 0;
+    int d_contrast = 0;
+    int d_gamma = 0;
+
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -22,8 +26,13 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    void apply_changes();
+
 public slots:
     void load_image_pushed();
-    void test_slider_changed(int value);
+    void brightness_slider_changed(int value);
+    void contrast_slider_changed(int value);
+    void gamma_slider_changed(int value);
+
 };
 #endif // MAINWINDOW_H
