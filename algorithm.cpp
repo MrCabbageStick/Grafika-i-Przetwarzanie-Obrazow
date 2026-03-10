@@ -1,9 +1,9 @@
 #include "algorithm.h"
 
-BGRA change_brightness(BGRA src_pixel, int d_brightness){
-    src_pixel.r = std::clamp(d_brightness + src_pixel.r, 0, 255);
-    src_pixel.g = std::clamp(d_brightness + src_pixel.g, 0, 255);
-    src_pixel.b = std::clamp(d_brightness + src_pixel.b, 0, 255);
+BGRA change_brightness(BGRA src_pixel, uint8_t* data){
+    src_pixel.r = data[src_pixel.r];
+    src_pixel.g = data[src_pixel.g];
+    src_pixel.b = data[src_pixel.b];
 
     return src_pixel;
 }
@@ -38,8 +38,19 @@ BGRA change_gamma(BGRA scr_pixel, int d_gamma){
     };
 }
 
+uint8_t calculate_brightness(uint8_t value, int brightness){
+    return std::clamp(value + brightness, 0, 255);
+}
+
+using PrecaculatedData = uint8_t[256];
+
 void run_algorithm(const QImage& src, QImage& dst, const AlgorithmArgs& args){
-    const int& brightness = args.brightness;
+
+    PrecaculatedData brightness_data;
+    for(uint16_t val = 0; val <= 255; val++)
+        brightness_data[val] = calculate_brightness(val, args.brightness);
+
+
 
     for(int y = 0; y < src.height(); y++){
         auto dst_line = reinterpret_cast<QRgb*>(dst.scanLine(y));
@@ -51,12 +62,13 @@ void run_algorithm(const QImage& src, QImage& dst, const AlgorithmArgs& args){
 
             // Pamiętaj że cpp jest głupi i robi castowanie domyślne
             // więc uchar + uchar = int
-            BGRA after_changes = change_gamma(
-                change_brightness(
-                    change_contrast(*src_pixel, args.contrast),
-                brightness),
-                args.gamma
-            );
+            // BGRA after_changes = change_gamma(
+            //     change_brightness(
+            //         change_contrast(*src_pixel, args.contrast),
+            //     brightness),
+            //     args.gamma
+            // );
+            BGRA after_changes = change_brightness(*src_pixel, brightness_data);
 
             dst_pixel->r = after_changes.r;
             dst_pixel->g = after_changes.g;
