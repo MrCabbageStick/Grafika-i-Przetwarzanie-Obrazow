@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>797</width>
+    <width>1127</width>
     <height>706</height>
    </rect>
   </property>
@@ -26,6 +26,9 @@
     <property name="text">
      <string>Original image</string>
     </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="edited_image">
     <property name="geometry">
@@ -38,6 +41,9 @@
     </property>
     <property name="text">
      <string>Edited image</string>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="load_image_btn">
@@ -153,13 +159,26 @@
      <string>Controls</string>
     </property>
    </widget>
+   <widget class="QLabel" name="histogram_label">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>10</y>
+      <width>256</width>
+      <height>200</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Histogram</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>797</width>
+     <width>1127</width>
      <height>22</height>
     </rect>
    </property>

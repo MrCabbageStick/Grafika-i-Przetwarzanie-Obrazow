@@ -14,6 +14,9 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     QImage original_image;
+    QImage edited_image;
+
+    QImage histogram_image;
 
     int d_brightness = 0;
     int d_contrast = 0;
@@ -27,6 +30,7 @@ private:
     Ui::MainWindow *ui;
 
     void apply_changes();
+    void update_histogram();
 
 public slots:
     void load_image_pushed();

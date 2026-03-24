@@ -6,9 +6,9 @@ void run_algorithm(const QImage& src, QImage& dst, const AlgorithmArgs& args){
 
     // Transform integer <-255,255> values to <0, 1> float values
     // Gamma and contrast should not be negative
-    float normalized_gamma = (args.gamma + 255) / 255.0f;
-    float normalized_contrast = (args.contrast + 255) / 255.0f;
-    float normalized_brightness = args.brightness / 255.0f;
+    float normalized_gamma = std::clamp((args.gamma + 255) / 255.0f, 0.0001f, 2.0f);
+    float normalized_contrast = std::clamp((args.contrast + 255) / 255.0f, 0.0f, 2.0f);
+    float normalized_brightness = std::clamp(args.brightness / 255.0f, -1.0f, 1.0f);
 
     // Precalculate values to save on resources later
     PrecaculatedData data;
@@ -21,6 +21,8 @@ void run_algorithm(const QImage& src, QImage& dst, const AlgorithmArgs& args){
 
         // Chain as: gamma(brightness(contrast(value)))
         // then convert back to integer in range <0, 255>
+
+        // (x * c + 0) ^ (1/0)
 
         data[val] = std::clamp(
             std::pow((normalized_val * normalized_contrast + normalized_brightness), 1 / normalized_gamma) * 255,
