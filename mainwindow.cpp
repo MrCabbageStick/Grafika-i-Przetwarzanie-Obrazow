@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->radius_input, SIGNAL(valueChanged(int)), SLOT(filter_radius_changed(int)));
     connect(ui->template_select, SIGNAL(currentIndexChanged(int)), SLOT(filter_template_changed(int)));
 
+    connect(ui->apply_filter_btn, SIGNAL(clicked(bool)), SLOT(apply_filter_pushed()));
+
     filter_radius = 1;
     get_provider_for_index(0);
     update_filter_table();
@@ -46,6 +48,8 @@ void MainWindow::load_image_pushed(){
     }
 
     qDebug() << "Loaded image: " << original_image;
+
+    edited_image = QImage(original_image);
 
     QPixmap pixmap = QPixmap::fromImage(original_image);
 
@@ -95,16 +99,59 @@ void MainWindow::update_filter_table(){
         for(size_t y = 0; y < size; y++){
             auto value = matrix_value_provider(FilterMatrixContext{x, y, size, size});
 
-            // Create a standard item instead of a heavy widget
             auto *item = new QTableWidgetItem();
 
-            // Passing an int automatically tells Qt to use a SpinBox when editing!
             item->setData(Qt::EditRole, value);
 
             ui->filter_matrix_table->setItem(y, x, item);
         }
     }
 
+}
+
+FilterMatrix MainWindow::filter_table_to_matrix(){
+    size_t matrix_width = ui->filter_matrix_table->columnCount();
+    size_t matrix_size = matrix_width * ui->filter_matrix_table->rowCount();
+
+    std::vector<float> matrix(matrix_size);
+    int sum = 0;
+
+    for(size_t i = 0; i < matrix_size; i++){
+        size_t x = i % matrix_width;
+        size_t y = i / matrix_width;
+
+        auto *item = ui->filter_matrix_table->item(y, x);
+
+        int value = item->data(Qt::EditRole).toInt();
+
+        sum += value;
+        matrix[i] = value;
+    }
+
+    if(sum != 0){
+        for(auto &value : matrix){
+            value /= sum;
+        }
+    }
+
+    qDebug() << matrix << "\n";
+
+    return {
+        matrix_width,
+        matrix,
+    };
+}
+
+void MainWindow::apply_filter_pushed(){
+    if(original_image.isNull()){
+        return;
+    }
+
+    auto matrix = filter_table_to_matrix();
+
+    run_algorithm(original_image, edited_image, {matrix});
+
+    ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
 }
 
 void MainWindow::test_log(int v){

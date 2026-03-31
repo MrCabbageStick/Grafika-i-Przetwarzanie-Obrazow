@@ -35,12 +35,16 @@ private:
 
     void update_filter_table();
 
+    FilterMatrix filter_table_to_matrix();
+
 public slots:
     void load_image_pushed();
 
     void filter_radius_changed(int value);
 
     void filter_template_changed(int index);
+
+    void apply_filter_pushed();
 
     void test_log(int v);
 };

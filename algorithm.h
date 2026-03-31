@@ -2,13 +2,19 @@
 #define ALGORITHM_H
 
 #include <QImage>
+#include <QDebug>
 
 struct FilterMatrixContext{
     size_t x, y, width, height;
 };
 
+struct FilterMatrix{
+    size_t width;
+    std::vector<float> matrix;
+};
+
 struct AlgorithmArgs{
-    int brightness;
+    FilterMatrix filter_matrix;
 };
 
 struct BGRA{
