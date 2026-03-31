@@ -14,16 +14,16 @@ BGRA apply_filter_matrix(size_t x, size_t y, const BGRA* src_bytes, size_t src_w
         for(size_t filter_x = 0; filter_x < filter_matrix.width; filter_x++){
             // Offset x by filter_x, but make filter_x relative to filter_center_x
             // clamp it to fit in image limits
-            int byte_x = std::clamp(
-                (int)x + ((int)filter_x - (int)filter_center_x),
-                (int)0,
-                (int)src_width - 1
+            int byte_x = std::clamp<int>(
+                (int)x + filter_x - filter_center_x,
+                0,
+                src_width - 1
             );
 
-            int byte_y = std::clamp(
-                (int)y + ((int)filter_y - (int)filter_center_y),
-                (int)0,
-                (int)src_height - 1
+            int byte_y = std::clamp<int>(
+                (int)y + filter_y - filter_center_y,
+                0,
+                src_height - 1
             );
 
             BGRA pixel = src_bytes[byte_x + byte_y * src_width];
@@ -35,21 +35,6 @@ BGRA apply_filter_matrix(size_t x, size_t y, const BGRA* src_bytes, size_t src_w
             sums[2] += pixel.b / 255.0f * weight;
         }
     }
-
-    if(!one_pixel_done){
-        qDebug() << sums[0] << " " << sums[1] << " " << sums[2] << "\n";
-        // one_pixel_done = true;
-    }
-
-    // for(auto &sum : sums){
-    //     sum /= filter_matrix.matrix.size();
-    // }
-
-    if(!one_pixel_done){
-        qDebug() << sums[0] << " " << sums[1] << " " << sums[2] << "\n";
-        one_pixel_done = true;
-    }
-
 
     return {
         .b = static_cast<uchar>(std::clamp(sums[2] * 255, 0.0f, 255.0f)),
