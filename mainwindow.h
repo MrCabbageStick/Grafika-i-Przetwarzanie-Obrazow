@@ -22,6 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
     QImage image;
+    QImage toolLayer;
     PaintTool* currentTool = new LineTool();
 
 public:

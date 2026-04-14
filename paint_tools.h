@@ -31,14 +31,33 @@ struct LineTool: public PaintTool{
         int dx = x - start_x;
         int dy = y - start_y;
 
-        int d = 2 * dy - dx;
-        int bi = 2 * (dy - dx);
-        int ai = 2 * dy;
+        int fake_dx = dx;
+        int fake_dy = dy;
+
+        // If drawing more vertical swap x and y
+        if(dy > dx){
+            fake_dx = dy;
+            fake_dy = dx;
+        }
+
+        // If drawing to smaller x or y, flip it
+        int y_multiplier = 1;
+        int x_multiplier = 1;
+
+        if(fake_dx < 0) x_multiplier = -1;
+        if(fake_dy < 0) y_multiplier = -1;
+
+        fake_dx *= x_multiplier;
+        fake_dy *= y_multiplier;
+
+        int d = 2 * fake_dy - fake_dx;
+        int bi = 2 * (fake_dy - fake_dx);
+        int ai = 2 * fake_dy;
 
         int pixel_x = fake_start_x;
         int pixel_y = fake_start_y;
 
-        for (; pixel_x != dx; pixel_x++)
+        for (; pixel_x != fake_dx; pixel_x++)
         {
             if (d >= 0) {
                 d += bi;
@@ -46,15 +65,27 @@ struct LineTool: public PaintTool{
             }
             else d += ai;
 
-            // Translate before draw
-            int translated_x = pixel_x + start_x;
-            int translated_y = pixel_y + start_y;
+            // Unswap x and y
+            int unswapped_x = pixel_x * x_multiplier;
+            int unswapped_y = pixel_y * y_multiplier;
 
-            canvas->setPixel(translated_x, translated_y, 0xffffff);
+            if(dy > dx){
+                unswapped_x = pixel_y * y_multiplier;
+                unswapped_y = pixel_x * x_multiplier;
+            }
+
+            // Translate before draw
+            int translated_x = unswapped_x + start_x;
+            int translated_y = unswapped_y + start_y;
+
+
+            canvas->setPixel(translated_x, translated_y, 0xffffffff);
         }
     }
 
-    void toolMove(unsigned int x, unsigned int y, QImage* canvas) override {}
+    void toolMove(unsigned int x, unsigned int y, QImage* canvas) override {
+        toolUp(x, y, canvas);
+    }
 };
 
 
