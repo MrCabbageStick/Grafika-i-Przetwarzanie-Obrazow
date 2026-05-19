@@ -264,8 +264,9 @@ void GLWidget::paintGL()
         Frame box_frame;
         box_frame.pos.x += 0.2f;
         auto s = box_frame.s();
-        box_frame.forward = glm::vec3((glm::vec4(box_frame.forward, 1.0f) * glm::rotate(identity, frame * 0.01f, s)));
-        box_frame.up = glm::cross(glm::normalize(box_frame.forward), s);
+        auto box_rot = glm::rotate(identity, frame * 0.01f, s);
+        box_frame.forward = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.forward, 1)));
+        box_frame.up = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.up, 1)));
 
         shaders["basic"]->setUniform("ModelMat", box_frame.matrix());
         shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
