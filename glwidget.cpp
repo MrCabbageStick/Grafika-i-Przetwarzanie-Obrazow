@@ -125,24 +125,13 @@ void GLWidget::processCamera(){
         camera.pos -= camera.up * MOVEMENT_MULT;
     }
 
-    glm::mat4 h_rot = glm::rotate(identity, ROTATION_MULT * move_x, Y_AXIS);
-    camera.forward = glm::normalize(glm::vec3(h_rot * glm::vec4(camera.forward, 0.0f)));
-    camera.up = glm::normalize(glm::vec3(h_rot * glm::vec4(camera.up, 0.0f)));
-
-    glm::mat4 v_rot = glm::rotate(identity, ROTATION_MULT * move_y, camera.s());
-    camera.forward = glm::normalize(glm::vec3(v_rot * glm::vec4(camera.forward, 0.0f)));
-    camera.up = glm::normalize(glm::vec3(v_rot * glm::vec4(camera.up, 0.0f)));
+    glm::mat4 rot = glm::rotate(identity, ROTATION_MULT * move_x, Y_AXIS);
+    rot = glm::rotate(rot, ROTATION_MULT * move_y, camera.s());
+    camera.forward = glm::normalize(glm::vec3(rot * glm::vec4(camera.forward, 0.0f)));
+    camera.up = glm::normalize(glm::vec3(rot * glm::vec4(camera.up, 0.0f)));
 
     move_x = 0;
     move_y = 0;
-
-    // auto s = camera.s();
-    // glm::mat4 v_rot = glm::rotate(identity, ROTATION_MULT * move_y, s);
-    // camera.forward = glm::normalize(glm::vec3(glm::vec4(camera.forward, 1.0f) * v_rot));
-    // camera.up = glm::cross(s, camera.forward);
-    // // rot = glm::rotate(rot, -ROTATION_MULT * 0.1f * move_y, s);
-    // // camera.up = rot * glm::vec4(Y_AXIS, 1.0f);
-
 }
 
 #include <glm/gtc/matrix_transform.hpp>
