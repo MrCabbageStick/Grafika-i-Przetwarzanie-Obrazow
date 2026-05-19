@@ -27,6 +27,8 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_2_Core
     glm::mat4 MVMat;
     glm::mat4 ProjMat;
 
+    Camera camera;
+
     QOpenGLDebugLogger *m_logger = nullptr;
     QTimer frame_timer;
     int frame;
@@ -34,8 +36,13 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_2_Core
     void createShaders();
     void createGeometry();
 
+    void processCamera();
+
     int pos_x, pos_y;
+    int move_x = 0, move_y = 0;
     float zoom;
+
+    QSet<int> keys;
 
 protected:
     void initializeGL();
@@ -43,8 +50,12 @@ protected:
     void resizeGL(int w, int h);
 
 
+    void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
+
 public:
     GLWidget();
     ~GLWidget();
