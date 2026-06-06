@@ -135,3 +135,69 @@ Geometry* newCircleGeometry(float radius, int n_segments, glm::vec3 color)
     }
     return geometry;
 }
+
+
+
+Geometry* newConeGeometry(float radius, float height, int n_sides, glm::vec3 color){
+    auto geometry = new Geometry();
+    {
+        geometry->setPrimitiveMode(GL_TRIANGLES);
+
+        std::vector<glm::vec3> verts;
+        std::vector<glm::vec3> normals;
+        std::vector<glm::vec3> colors;
+        std::vector<uint> indices;
+
+        // verts[0] is the top of the cone
+        verts.push_back(glm::vec3(0, height, 0));
+        colors.push_back(color);
+        // verts[1] is the bottom center of the cone
+        verts.push_back(glm::vec3(0, 0, 0));
+        colors.push_back(color * 0.6f);
+
+        float step_angle = 2 * M_PI / n_sides;
+
+
+        for(int step = 0; step < n_sides; step++){
+            float angle = step_angle * step;
+            auto side_color = color;
+            auto base_color = color;
+            if(step % 2 == 0){
+                side_color *= .75;
+                base_color *= .65;
+            }
+
+            // Generate "bottom left" side corner
+            verts.push_back(glm::vec3(glm::sin(angle) * radius, 0, glm::cos(angle) * radius));
+            size_t vert_index = verts.size() - 1;
+            colors.push_back(side_color * 0.75f);
+
+            // Create side
+            //                     verts[0]
+            //                       /\
+            //                      /  \
+            //                     /    \
+            // verts[vertex_index] ------ verts[vertex_index + 1]
+
+            indices.push_back(vert_index);
+            // First side's vertex or next side's
+            indices.push_back((step == n_sides - 1) ? 2 : vert_index + 1);
+            // Top
+            indices.push_back(0);
+
+            // Generate base
+            indices.push_back(vert_index);
+            // First side's vertex or next side's
+            indices.push_back((step == n_sides - 1) ? 2 : vert_index + 1);
+            // Bottom center
+            indices.push_back(1);
+        }
+
+        geometry->setIndices(indices.data(), indices.size());
+        geometry->setVertices((int)Attributes::position, verts.data(), verts.size());
+        geometry->setAttribute((int)Attributes::color, colors.data(), colors.size());
+
+    }
+    return geometry;
+}
+

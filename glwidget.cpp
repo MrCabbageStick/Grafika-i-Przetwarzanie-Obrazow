@@ -70,6 +70,9 @@ void GLWidget::createGeometry()
 
     geometry["circ"] = newCircleGeometry(0.75, 24, {1,0,0});
     geometryMat["circ"] = glm::mat4(1.0f);
+
+    geometry["cone"] = newConeGeometry(0.5, 0.75, 20, {1, 1, 1});
+    geometryMat["cone"] = glm::mat4(1.0f);
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *e){
@@ -261,16 +264,21 @@ void GLWidget::paintGL()
         // shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
         // geometry["box"]->render();
 
-        Frame box_frame;
-        box_frame.pos.x += 0.2f;
-        auto s = box_frame.s();
-        auto box_rot = glm::rotate(identity, frame * 0.01f, s);
-        box_frame.forward = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.forward, 1)));
-        box_frame.up = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.up, 1)));
+        // Frame box_frame;
+        // box_frame.pos.x += 0.2f;
+        // auto s = box_frame.s();
+        // auto box_rot = glm::rotate(identity, frame * 0.01f, s);
+        // box_frame.forward = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.forward, 1)));
+        // box_frame.up = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.up, 1)));
 
-        shaders["basic"]->setUniform("ModelMat", box_frame.matrix());
+        // shaders["basic"]->setUniform("ModelMat", box_frame.matrix());
+        // geometry["box"]->render();
+
+        Frame cone_frame;
+        shaders["basic"]->setUniform("ModelMat", cone_frame.matrix());
         shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
-        geometry["box"]->render();
+        geometry["cone"]->render();
+
     }
     else {
         qDebug("WARNING: No shader program");
