@@ -7,6 +7,7 @@
 #include "algorithm.h"
 #include "ui_hsldialog.h"
 #include "color_spaces.h"
+#include "tools.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -43,6 +44,21 @@ MainWindow::MainWindow(QWidget *parent)
         << " | Rgb: " << color_back.r << ", " << color_back.g << ", " << color_back.b
         << "\n";
 
+    XYZ xyz = rgb2xyz(color);
+    BGRA color_from_xyz = xyz2rgb(xyz);
+    qDebug()
+        << "Rgb: " << color.r << ", " << color.g << ", " << color.b
+        << " | Xyz: " << xyz.x << ", " << xyz.y << ", " << xyz.z
+        << " | Rgb: " << color_from_xyz.r << ", " << color_from_xyz.g << ", " << color_from_xyz.b
+        << "\n";
+
+    LAB lab = rgb2lab(color);
+    BGRA color_from_lab = lab2rgb(lab);
+    qDebug()
+        << "Rgb: " << color.r << ", " << color.g << ", " << color.b
+        << " | Lab: " << lab.l << ", " << lab.a << ", " << lab.b
+        << " | Rgb: " << color_from_lab.r << ", " << color_from_lab.g << ", " << color_from_lab.b
+        << "\n";
 }
 
 MainWindow::~MainWindow()

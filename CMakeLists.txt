@@ -28,6 +28,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ExposureDialog.ui
         hsldialog.h hsldialog.cpp hsldialog.ui
         color_spaces.h
+        tools.h
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GIPO APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
