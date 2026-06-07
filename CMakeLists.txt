@@ -29,6 +29,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hsldialog.h hsldialog.cpp hsldialog.ui
         color_spaces.h
         tools.h
+        labdialog.h labdialog.cpp labdialog.ui
 
     )
 # Define target properties for Android with Qt 6 as:

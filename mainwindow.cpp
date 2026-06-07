@@ -8,6 +8,7 @@
 #include "ui_hsldialog.h"
 #include "color_spaces.h"
 #include "tools.h"
+#include "ui_labdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     hsl_dialog = new HslDialog(this);
+    lab_dialog = new LabDialog(this);
 
     connect(ui->load_image_btn, SIGNAL(clicked(bool)), this, SLOT(load_image_pushed()));
     connect(ui->gamma_slider, SIGNAL(valueChanged(int)), SLOT(gamma_slider_changed(int)));
@@ -28,12 +30,25 @@ MainWindow::MainWindow(QWidget *parent)
         hsl_dialog->activateWindow();
     });
 
+    connect(ui->actionLAB, &QAction::triggered, this, [this]() {
+        lab_dialog->show();
+        lab_dialog->raise();      // bring to front if already open
+        lab_dialog->activateWindow();
+    });
+
     connect(hsl_dialog->ui->h_slider, &QSlider::valueChanged,
             this, &MainWindow::hueSliderChanged);
     connect(hsl_dialog->ui->s_slider, &QSlider::valueChanged,
             this, &MainWindow::satSliderChanged);
     connect(hsl_dialog->ui->l_slider, &QSlider::valueChanged,
             this, &MainWindow::lightSliderChanged);
+
+    connect(lab_dialog->ui->l_slider, &QSlider::valueChanged,
+            this, &MainWindow::lSliderChanged);
+    connect(lab_dialog->ui->a_slider, &QSlider::valueChanged,
+            this, &MainWindow::aSliderChanged);
+    connect(lab_dialog->ui->b_slider, &QSlider::valueChanged,
+            this, &MainWindow::bSliderChanged);
 
     BGRA color = {123, 255, 9, 255};
     Hsl color_hsl = rgb2hsl(color);
@@ -123,19 +138,16 @@ void MainWindow::on_actionHSL_triggered(){}
 
 
 
-/// values from 0 to 359, treat as degrees
 void MainWindow::hueSliderChanged(int value){
     current_hsl.h = value;
     apply_hsl();
 }
 
-/// values from 0 to 99, treat as percents
 void MainWindow::satSliderChanged(int value){
     current_hsl.s = value;
     apply_hsl();
 }
 
-/// values from 0 to 99, treat as percents
 void MainWindow::lightSliderChanged(int value){
     current_hsl.l = value;
     apply_hsl();
@@ -164,6 +176,49 @@ void MainWindow::apply_hsl(){
             hsl.l = std::clamp(hsl.l + current_hsl.l / 100.0, 0.0, 1.0);
 
             *dst_pixel = hsl2rgb(hsl);
+        }
+    }
+
+    ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
+}
+
+
+void MainWindow::lSliderChanged(int value){
+    current_lab.l = value;
+    apply_lab();
+}
+
+void MainWindow::aSliderChanged(int value){
+    current_lab.a = value;
+    apply_lab();
+}
+
+void MainWindow::bSliderChanged(int value){
+    current_lab.b = value;
+    apply_lab();
+}
+
+void MainWindow::apply_lab(){
+    lab_dialog->ui->l_slider->setValue(current_lab.l);
+    lab_dialog->ui->a_slider->setValue(current_lab.a);
+    lab_dialog->ui->b_slider->setValue(current_lab.b);
+
+    for(int y = 0; y < edited_image.height(); y++){
+        auto dst_line = reinterpret_cast<QRgb*>(edited_image.scanLine(y));
+        auto src_line = reinterpret_cast<const QRgb*>(original_image.constScanLine(y));
+
+        for(int x = 0; x < edited_image.width(); x++){
+            // Use helper structure to extract RGBA data from QRgb
+            const BGRA* src_pixel = (const BGRA*)(src_line + x);
+            BGRA* dst_pixel = (BGRA*)(dst_line + x);
+
+            LAB lab = rgb2lab(*src_pixel);
+
+            lab.l = std::clamp(lab.l + current_lab.l, 0.0f, 100.0f);
+            lab.a = std::clamp(lab.a + current_lab.a, -128.0f, 127.0f);
+            lab.b = std::clamp(lab.b + current_lab.b, -128.0f, 127.0f);
+
+            *dst_pixel = lab2rgb(lab);
         }
     }
 

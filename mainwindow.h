@@ -5,9 +5,14 @@
 #include <QImage>
 
 #include "hsldialog.h"
+#include "labdialog.h"
 
 struct HslSliderStates{
     int h, s, l; // Values from -max to max
+};
+
+struct LabSliderStates{
+    int l, a, b;
 };
 
 QT_BEGIN_NAMESPACE
@@ -29,6 +34,9 @@ class MainWindow : public QMainWindow
     HslDialog *hsl_dialog = nullptr;
     HslSliderStates current_hsl = {0, 0, 0};
 
+    LabDialog *lab_dialog = nullptr;
+    LabSliderStates current_lab = {0, 0, 0};
+
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -39,6 +47,7 @@ private:
     void apply_changes();
 
     void apply_hsl();
+    void apply_lab();
 
 public slots:
     void load_image_pushed();
@@ -46,12 +55,13 @@ public slots:
     void contrast_slider_changed(int value);
     void gamma_slider_changed(int value);
 
-    /// values from 0 to 359, treat as degrees
     void hueSliderChanged(int value);
-    /// values from 0 to 99, treat as percents
     void satSliderChanged(int value);
-    /// values from 0 to 99, treat as percents
     void lightSliderChanged(int value);
+
+    void lSliderChanged(int value);
+    void aSliderChanged(int value);
+    void bSliderChanged(int value);
 
 private slots:
     void on_actionHSL_triggered();
