@@ -1,19 +1,27 @@
 #ifndef PAINT_TOOLS_H
 #define PAINT_TOOLS_H
 
+#include <cstdlib>
+#include <cmath>
+
 #include <QImage>
 #include <QDebug>
 
+template<typename T>
+T abs(T a){
+    return a < 0 ? -a : a;
+}
+
 struct PaintTool{
-    virtual void toolDown(unsigned int x, unsigned int y, QImage* canvas) = 0;
-    virtual void toolUp(unsigned int x, unsigned int y, QImage* canvas) = 0;
-    virtual void toolMove(unsigned int x, unsigned int y, QImage* canvas) = 0;
+    virtual void toolDown(int x, int y, QImage* canvas) = 0;
+    virtual void toolUp(int x, int y, QImage* canvas) = 0;
+    virtual void toolMove(int x, int y, QImage* canvas) = 0;
 };
 
 struct LineTool: public PaintTool{
-    unsigned int start_x, start_y;
+    int start_x, start_y;
 
-    void toolDown(unsigned int x, unsigned int y, QImage* canvas) override {
+    void toolDown(int x, int y, QImage* canvas) override {
         start_x = x;
         start_y = y;
 
@@ -22,72 +30,96 @@ struct LineTool: public PaintTool{
         qDebug() << "Set\n";
     }
 
-    void toolUp(unsigned int x, unsigned int y, QImage* canvas) override {
-        // Let's "draw" a line from 0,0 to x-x0, y-y0 and then translate it
-        int fake_start_x = 0;
-        int fake_start_y = 0;
+    void toolUp(int dx, int dy, QImage* canvas) override {
+        int x = start_x;
+        int y = start_y;
 
-        // dx and dy will be our fake_end_x and fake_end_y
-        int dx = x - start_x;
-        int dy = y - start_y;
+        int step_x = (dx - start_x) < 0 ? -1 : 1;
+        int step_y = (dy - start_y) < 0 ? -1 : 1;
 
-        int fake_dx = dx;
-        int fake_dy = dy;
+        int delta_x = abs(dx - start_x);
+        int delta_y = abs(dy - start_y);
 
-        // If drawing more vertical swap x and y
-        if(dy > dx){
-            fake_dx = dy;
-            fake_dy = dx;
-        }
+        int error = delta_x - delta_y;
 
-        // If drawing to smaller x or y, flip it
-        int y_multiplier = 1;
-        int x_multiplier = 1;
+        while (true) {
+            canvas->setPixel(x, y, 0xffffffff);
 
-        if(fake_dx < 0) x_multiplier = -1;
-        if(fake_dy < 0) y_multiplier = -1;
+            if (x == dx && y == dy) break;
 
-        fake_dx *= x_multiplier;
-        fake_dy *= y_multiplier;
+            int error2 = error * 2;
 
-        int d = 2 * fake_dy - fake_dx;
-        int bi = 2 * (fake_dy - fake_dx);
-        int ai = 2 * fake_dy;
-
-        int pixel_x = fake_start_x;
-        int pixel_y = fake_start_y;
-
-        for (; pixel_x != fake_dx; pixel_x++)
-        {
-            if (d >= 0) {
-                d += bi;
-                ++pixel_y;
+            if (delta_y == 0 || error2 > -delta_y) {
+                error -= delta_y;
+                x += step_x;
             }
-            else d += ai;
-
-            // Unswap x and y
-            int unswapped_x = pixel_x * x_multiplier;
-            int unswapped_y = pixel_y * y_multiplier;
-
-            if(dy > dx){
-                unswapped_x = pixel_y * y_multiplier;
-                unswapped_y = pixel_x * x_multiplier;
+            if (delta_x == 0 || error2 < delta_x) {
+                error += delta_x;
+                y += step_y;
             }
-
-            // Translate before draw
-            int translated_x = unswapped_x + start_x;
-            int translated_y = unswapped_y + start_y;
-
-
-            canvas->setPixel(translated_x, translated_y, 0xffffffff);
         }
     }
 
-    void toolMove(unsigned int x, unsigned int y, QImage* canvas) override {
+    void toolMove(int x, int y, QImage* canvas) override {
         toolUp(x, y, canvas);
     }
 };
 
+
+
+struct CircleTool: public PaintTool{
+    int start_x, start_y, radius;
+
+    virtual void toolDown(int x, int y, QImage* canvas){
+        start_x = x;
+        start_y = y;
+        radius = 0;
+    }
+
+    virtual void toolUp(int dx, int dy, QImage* canvas){
+        int x_length = abs(dx - start_x);
+        int y_length = abs(dy - start_y);
+        radius = sqrt(x_length * x_length + y_length * y_length);
+
+        int d = 5 - 4 * radius;
+        int x = 0;
+        int y = radius;
+        int deltaA = (-2 * radius + 5) * 4;
+        int deltaB = 3 * 4;
+
+        while (x <= y) {
+            drawAllOctans(x, y, canvas);
+
+            if (d > 0) {
+                d += deltaA;
+                y--;
+                x++;
+                deltaA += 4 * 4;
+                deltaB += 2 * 4;
+            } else {
+                d += deltaB;
+                x++;
+                deltaA += 2 * 4;
+                deltaB += 2 * 4;
+            }
+        }
+    }
+
+    virtual void toolMove(int x, int y, QImage* canvas){
+        toolUp(x, y, canvas);
+    }
+
+    void drawAllOctans(int x, int y, QImage* canvas){
+        canvas->setPixel(start_x + x, start_y + y, 0xffffffff);
+        canvas->setPixel(start_x - x, start_y + y, 0xffffffff);
+        canvas->setPixel(start_x + x, start_y - y, 0xffffffff);
+        canvas->setPixel(start_x - x, start_y - y, 0xffffffff);
+        canvas->setPixel(start_x + y, start_y + x, 0xffffffff);
+        canvas->setPixel(start_x - y, start_y + x, 0xffffffff);
+        canvas->setPixel(start_x + y, start_y - x, 0xffffffff);
+        canvas->setPixel(start_x - y, start_y - x, 0xffffffff);
+    }
+};
 
 
 #endif // PAINT_TOOLS_H

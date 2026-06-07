@@ -6,6 +6,14 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    connect(ui->actionCircle, &QAction::triggered, this, [this]{
+        this->currentTool = new CircleTool();
+    });
+
+    connect(ui->actionLine, &QAction::triggered, this, [this]{
+        this->currentTool = new LineTool();
+    });
 }
 
 MainWindow::~MainWindow()

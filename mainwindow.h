@@ -23,7 +23,7 @@ class MainWindow : public QMainWindow
 
     QImage image;
     QImage toolLayer;
-    PaintTool* currentTool = new LineTool();
+    PaintTool* currentTool = new CircleTool();
 
 public:
     MainWindow(QWidget *parent = nullptr);
