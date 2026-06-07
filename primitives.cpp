@@ -174,6 +174,7 @@ Geometry* newConeGeometry(float radius, float height, int n_sides, glm::vec3 col
         colors.push_back(color * 0.6f);
 
         float step_angle = 2 * M_PI / n_sides;
+        float slope = radius / height;
 
 
         for(int step = 0; step < n_sides; step++){
@@ -181,7 +182,7 @@ Geometry* newConeGeometry(float radius, float height, int n_sides, glm::vec3 col
 
             // Generate "bottom left" side corner
             verts.push_back(glm::vec3(glm::sin(angle) * radius, 0, glm::cos(angle) * radius));
-            normals.push_back(glm::normalize(glm::vec3(glm::sin(angle), 0, glm::cos(angle))));
+            normals.push_back(glm::normalize(glm::vec3(glm::sin(angle), slope, glm::cos(angle))));
             size_t vert_index = verts.size() - 1;
             colors.push_back(color);
 

@@ -77,7 +77,7 @@ void GLWidget::createGeometry()
     geometry["circ"] = newCircleGeometry(0.75, 24, {1,0,0});
     geometryMat["circ"] = glm::mat4(1.0f);
 
-    geometry["cone"] = newConeGeometry(0.5, 0.75, 20, {1, 1, 1});
+    geometry["cone"] = newConeGeometry(0.5, 0.75, 50, {1, 1, 1});
     geometryMat["cone"] = glm::mat4(1.0f);
 }
 
@@ -162,11 +162,13 @@ void GLWidget::paintGL()
     processCamera();
     glm::mat4 view = camera.matrix();
 
+    glm::mat4 orbit_rotation = glm::rotate(identity, frame * 0.01f, glm::vec3(0, 1, 0));
+
     if(shaders.contains("basic")) {
         Frame box_frame;
-        box_frame.pos = {2, 0, 0};
+        box_frame.pos = orbit_rotation * glm::vec4{2, 0, 0, 0};
         Frame cone_frame;
-        cone_frame.pos = {0, 0, 2};
+        cone_frame.pos = orbit_rotation * glm::vec4{0, 0, 2, 0};
 
         shaders["basic"]->use();
         shaders["basic"]->setUniform("ViewMat", view);
@@ -189,16 +191,16 @@ void GLWidget::paintGL()
 
     if(shaders.contains("ads")){
         Frame box_frame;
-        box_frame.pos = {-2, 0, 0};
+        box_frame.pos = orbit_rotation * glm::vec4{-2, 0, 0, 0};
         Frame cone_frame;
-        cone_frame.pos = {0, 0, -2};
+        cone_frame.pos = orbit_rotation * glm::vec4{0, 0, -2, 0};
 
         shaders["ads"]->use();
         shaders["ads"]->setUniform("ViewMat", view);
         shaders["ads"]->setUniform("ProjectionMat", ProjMat);
 
 
-        shaders["ads"]->setUniform("LightPos",     glm::vec3(2.0f, 3.0f, 2.0f));
+        shaders["ads"]->setUniform("LightPos",     glm::vec3(0.0f, 3.0f, 0.0f));
         shaders["ads"]->setUniform("LightColor",   glm::vec3(1.0f, 1.0f, 1.0f));
         shaders["ads"]->setUniform("AmbientColor", glm::vec3(0.1f, 0.1f, 0.1f));
         shaders["ads"]->setUniform("Shininess",    32.0f);
@@ -209,10 +211,10 @@ void GLWidget::paintGL()
         geometry["box"]->render();
 
 
-        shaders["ads"]->setUniform("LightPos",     glm::vec3(2.0f, 3.0f, 2.0f));
+        shaders["ads"]->setUniform("LightPos",     glm::vec3(0.0f, 3.0f, 0.0f));
         shaders["ads"]->setUniform("LightColor",   glm::vec3(1.0f, 1.0f, 1.0f));
         shaders["ads"]->setUniform("AmbientColor", glm::vec3(0.1f, 0.1f, 0.1f));
-        shaders["ads"]->setUniform("Shininess",    32.0f);
+        shaders["ads"]->setUniform("Shininess",    1.0f);
 
         auto cone_scale = glm::scale(identity, {1.5, 1.5, 1.5});
         shaders["ads"]->setUniform("ModelMat", cone_frame.matrix() * cone_scale);
