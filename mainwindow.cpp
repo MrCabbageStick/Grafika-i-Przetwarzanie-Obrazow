@@ -67,6 +67,7 @@ void MainWindow::load_image_pushed(){
     }
 
     qDebug() << "Loaded image: " << original_image;
+    edited_image = QImage(original_image);
 
     QPixmap pixmap = QPixmap::fromImage(original_image);
 
@@ -74,15 +75,15 @@ void MainWindow::load_image_pushed(){
 }
 
 void MainWindow::apply_changes(){
-    if(original_image.isNull()){
+    if(original_image.isNull() || original_image.isNull()){
         return;
     }
 
-    QImage local_image = QImage(original_image);
+    // QImage local_image = QImage(original_image);
 
-    run_algorithm(original_image, local_image, AlgorithmArgs{ d_brightness, d_contrast, d_gamma });
+    run_algorithm(original_image, edited_image, AlgorithmArgs{ d_brightness, d_contrast, d_gamma });
 
-    ui->edited_image->setPixmap(QPixmap::fromImage(local_image));
+    ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
 }
 
 void MainWindow::brightness_slider_changed(int value){
@@ -102,18 +103,54 @@ void MainWindow::gamma_slider_changed(int value){
 
 
 
-void MainWindow::on_actionHSL_triggered()
-{
+void MainWindow::on_actionHSL_triggered(){}
 
-}
+
 
 /// values from 0 to 359, treat as degrees
 void MainWindow::hueSliderChanged(int value){
+    current_hsl.h = value;
+    apply_hsl();
 }
 
 /// values from 0 to 99, treat as percents
-void MainWindow::satSliderChanged(int value){}
+void MainWindow::satSliderChanged(int value){
+    current_hsl.s = value;
+    apply_hsl();
+}
 
 /// values from 0 to 99, treat as percents
-void MainWindow::lightSliderChanged(int value){}
+void MainWindow::lightSliderChanged(int value){
+    current_hsl.l = value;
+    apply_hsl();
+}
+
+void MainWindow::apply_hsl(){
+    hsl_dialog->ui->s_slider->setValue(current_hsl.s);
+    hsl_dialog->ui->l_slider->setValue(current_hsl.l);
+    hsl_dialog->ui->h_slider->setValue(current_hsl.h);
+
+    for(int y = 0; y < edited_image.height(); y++){
+        auto dst_line = reinterpret_cast<QRgb*>(edited_image.scanLine(y));
+        auto src_line = reinterpret_cast<const QRgb*>(original_image.constScanLine(y));
+
+        for(int x = 0; x < edited_image.width(); x++){
+            // Use helper structure to extract RGBA data from QRgb
+            const BGRA* src_pixel = (const BGRA*)(src_line + x);
+            BGRA* dst_pixel = (BGRA*)(dst_line + x);
+
+            Hsl hsl = rgb2hsl(*src_pixel);
+
+            hsl.h = (hsl.h + (double)current_hsl.h);
+            if(hsl.h > 359) hsl.h -= 360; else if(hsl.h < 0) hsl.h += 360;
+
+            hsl.s = std::clamp(hsl.s + current_hsl.s / 100.0, 0.0, 1.0);
+            hsl.l = std::clamp(hsl.l + current_hsl.l / 100.0, 0.0, 1.0);
+
+            *dst_pixel = hsl2rgb(hsl);
+        }
+    }
+
+    ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
+}
 

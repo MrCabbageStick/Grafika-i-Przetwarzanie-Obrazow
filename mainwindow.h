@@ -6,6 +6,10 @@
 
 #include "hsldialog.h"
 
+struct HslSliderStates{
+    int h, s, l; // Values from -max to max
+};
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -16,12 +20,14 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     QImage original_image;
+    QImage edited_image;
 
     int d_brightness = 0;
     int d_contrast = 0;
     int d_gamma = 0;
 
     HslDialog *hsl_dialog = nullptr;
+    HslSliderStates current_hsl = {0, 0, 0};
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -31,6 +37,8 @@ private:
     Ui::MainWindow *ui;
 
     void apply_changes();
+
+    void apply_hsl();
 
 public slots:
     void load_image_pushed();

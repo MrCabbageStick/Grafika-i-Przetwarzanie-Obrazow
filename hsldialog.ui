@@ -22,6 +22,9 @@
      <height>41</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>-359</number>
+   </property>
    <property name="maximum">
     <number>359</number>
    </property>
@@ -77,6 +80,9 @@
      <height>41</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>-99</number>
+   </property>
    <property name="orientation">
     <enum>Qt::Orientation::Horizontal</enum>
    </property>
@@ -89,6 +95,9 @@
      <width>281</width>
      <height>41</height>
     </rect>
+   </property>
+   <property name="minimum">
+    <number>-99</number>
    </property>
    <property name="orientation">
     <enum>Qt::Orientation::Horizontal</enum>
