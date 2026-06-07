@@ -5,6 +5,7 @@
 #include <QImage>
 
 #include "algorithm.h"
+#include "ui_histogramdialog.h"
 #include "ui_hsldialog.h"
 #include "color_spaces.h"
 #include "tools.h"
@@ -15,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    histogramDialog = new HistogramDialog(this);
 
     hsl_dialog = new HslDialog(this);
     lab_dialog = new LabDialog(this);
@@ -34,6 +37,12 @@ MainWindow::MainWindow(QWidget *parent)
         lab_dialog->show();
         lab_dialog->raise();      // bring to front if already open
         lab_dialog->activateWindow();
+    });
+
+    connect(ui->actionHistogram, &QAction::triggered, this, [this](){
+        histogramDialog->show();
+        histogramDialog->raise();      // bring to front if already open
+        histogramDialog->activateWindow();
     });
 
     connect(hsl_dialog->ui->h_slider, &QSlider::valueChanged,
@@ -103,6 +112,8 @@ void MainWindow::load_image_pushed(){
     QPixmap pixmap = QPixmap::fromImage(original_image);
 
     ui->orignal_image->setPixmap(pixmap);
+
+    update_histogram();
 }
 
 void MainWindow::apply_changes(){
@@ -115,6 +126,8 @@ void MainWindow::apply_changes(){
     run_algorithm(original_image, edited_image, AlgorithmArgs{ d_brightness, d_contrast, d_gamma });
 
     ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
+
+    update_histogram();
 }
 
 void MainWindow::brightness_slider_changed(int value){
@@ -180,6 +193,8 @@ void MainWindow::apply_hsl(){
     }
 
     ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
+
+    update_histogram();
 }
 
 
@@ -223,5 +238,75 @@ void MainWindow::apply_lab(){
     }
 
     ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
+
+    update_histogram();
+}
+
+void MainWindow::update_histogram(){
+    size_t n_pixels = edited_image.width() * edited_image.height();
+
+    auto bits = reinterpret_cast<BGRA*>(edited_image.bits());
+
+    float green_intesities[256] = {};
+    float blue_intesities[256] = {};
+    float red_intesities[256] = {};
+
+
+    // Count pixels with intesity <0; 255>
+    for(size_t i = 0; i < n_pixels; i++){
+        auto rgba = bits[i];
+
+        green_intesities[rgba.g]++;
+        blue_intesities[rgba.b]++;
+        red_intesities[rgba.r]++;
+    }
+
+    // green_intesities[0] = 0;
+    // red_intesities[0] = 0;
+    // blue_intesities[0] = 0;
+
+    // green_intesities[255] = 0;
+    // red_intesities[255] = 0;
+    // blue_intesities[255] = 0;
+
+
+    // for(size_t i = 0; i < 256; i++){
+    //     green_intesities[i] = std::log1p(green_intesities[i]);
+    //     red_intesities[i] = std::log1p(red_intesities[i]);
+    //     blue_intesities[i] = std::log1p(blue_intesities[i]);
+    // }
+
+    float max_pixel_count = 0;
+
+    for(size_t i = 0; i < 256; i++){
+        max_pixel_count = std::max({green_intesities[i], red_intesities[i], blue_intesities[i], max_pixel_count});
+    }
+
+    // Convert pixel count to percent of image pixels
+    for(size_t i = 0; i < 256; i++){
+        green_intesities[i] /= max_pixel_count;
+        red_intesities[i] /= max_pixel_count;
+        blue_intesities[i] /= max_pixel_count;
+    }
+
+    histogram_image = QImage(256, 100, QImage::Format_ARGB32);
+    histogram_image.fill(QColor::fromRgb(0, 0, 0));
+
+    auto histogram_bits = reinterpret_cast<BGRA*>(histogram_image.bits());
+
+    for(size_t x = 0; x < histogram_image.width(); x++){
+        for(size_t y = 0; y < histogram_image.height(); y++){
+            auto pixel = &histogram_bits[x + y * histogram_image.width()];
+
+            if(green_intesities[x] * 100 > y) pixel->g = 255;
+            if(red_intesities[x] * 100 > y) pixel->r = 255;
+            if(blue_intesities[x] * 100 > y) pixel->b = 255;
+
+        }
+    }
+
+    histogram_image.flip();
+    histogramDialog->ui->histogram_label->setPixmap(QPixmap::fromImage(histogram_image));
+
 }
 

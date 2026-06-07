@@ -170,7 +170,14 @@
     <addaction name="actionHSL"/>
     <addaction name="actionLAB"/>
    </widget>
+   <widget class="QMenu" name="menuWindows">
+    <property name="title">
+     <string>Windows</string>
+    </property>
+    <addaction name="actionHistogram"/>
+   </widget>
    <addaction name="menu_Edit"/>
+   <addaction name="menuWindows"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionHSL">
@@ -181,6 +188,11 @@
   <action name="actionLAB">
    <property name="text">
     <string>LAB</string>
+   </property>
+  </action>
+  <action name="actionHistogram">
+   <property name="text">
+    <string>Histogram</string>
    </property>
   </action>
  </widget>

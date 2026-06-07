@@ -7,6 +7,8 @@
 #include "hsldialog.h"
 #include "labdialog.h"
 
+#include "histogramdialog.h"
+
 struct HslSliderStates{
     int h, s, l; // Values from -max to max
 };
@@ -27,6 +29,8 @@ class MainWindow : public QMainWindow
     QImage original_image;
     QImage edited_image;
 
+    QImage histogram_image;
+
     int d_brightness = 0;
     int d_contrast = 0;
     int d_gamma = 0;
@@ -36,6 +40,8 @@ class MainWindow : public QMainWindow
 
     LabDialog *lab_dialog = nullptr;
     LabSliderStates current_lab = {0, 0, 0};
+
+    HistogramDialog *histogramDialog = nullptr;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -48,6 +54,8 @@ private:
 
     void apply_hsl();
     void apply_lab();
+
+    void update_histogram();
 
 public slots:
     void load_image_pushed();
