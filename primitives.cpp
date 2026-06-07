@@ -94,6 +94,22 @@ Geometry* newBoxGeometry(glm::vec3 size, glm::vec3 color)
         indices[it++] = 20;   indices[it++] = 23;   indices[it++] = 22;   indices[it++] = 20;   indices[it++] = 22;   indices[it++] = 21;
 
         geometry->setIndices(indices.data(), indices.size());
+
+        std::vector<glm::vec3> normals(n);
+        // front face
+        for(int i=0; i<4; i++)  normals[0+i] = { 0,  0,  1};
+        // right face
+        for(int i=0; i<4; i++)  normals[4+i] = { 1,  0,  0};
+        // back face
+        for(int i=0; i<4; i++)  normals[8+i] = { 0,  0, -1};
+        // left face
+        for(int i=0; i<4; i++)  normals[12+i] = {-1,  0,  0};
+        // top face
+        for(int i=0; i<4; i++)  normals[16+i] = { 0,  1,  0};
+        // bottom face
+        for(int i=0; i<4; i++)  normals[20+i] = { 0, -1,  0};
+
+        geometry->setAttribute((int)Attributes::normal, normals.data(), n);
     }
     return geometry;
 }
@@ -150,9 +166,11 @@ Geometry* newConeGeometry(float radius, float height, int n_sides, glm::vec3 col
 
         // verts[0] is the top of the cone
         verts.push_back(glm::vec3(0, height, 0));
+        normals.push_back({0, 1, 0});
         colors.push_back(color);
         // verts[1] is the bottom center of the cone
         verts.push_back(glm::vec3(0, 0, 0));
+        normals.push_back({0, -1, 0});
         colors.push_back(color * 0.6f);
 
         float step_angle = 2 * M_PI / n_sides;
@@ -160,17 +178,12 @@ Geometry* newConeGeometry(float radius, float height, int n_sides, glm::vec3 col
 
         for(int step = 0; step < n_sides; step++){
             float angle = step_angle * step;
-            auto side_color = color;
-            auto base_color = color;
-            if(step % 2 == 0){
-                side_color *= .75;
-                base_color *= .65;
-            }
 
             // Generate "bottom left" side corner
             verts.push_back(glm::vec3(glm::sin(angle) * radius, 0, glm::cos(angle) * radius));
+            normals.push_back(glm::normalize(glm::vec3(glm::sin(angle), 0, glm::cos(angle))));
             size_t vert_index = verts.size() - 1;
-            colors.push_back(side_color * 0.75f);
+            colors.push_back(color);
 
             // Create side
             //                     verts[0]
@@ -196,6 +209,7 @@ Geometry* newConeGeometry(float radius, float height, int n_sides, glm::vec3 col
         geometry->setIndices(indices.data(), indices.size());
         geometry->setVertices((int)Attributes::position, verts.data(), verts.size());
         geometry->setAttribute((int)Attributes::color, colors.data(), colors.size());
+        geometry->setAttribute((int)Attributes::normal, normals.data(), normals.size());
 
     }
     return geometry;

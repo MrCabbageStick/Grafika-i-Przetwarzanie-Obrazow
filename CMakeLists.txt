@@ -5,7 +5,9 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets)
 find_package(OpenGL REQUIRED)
 
 qt_add_executable(gl_project main.cpp geometry.cpp glslprogram.cpp glwidget.cpp primitives.cpp
-                    geometry.h glslprogram.h glwidget.h primitives.h shaders/vs.glsl shaders/fs.glsl)
+                    geometry.h glslprogram.h glwidget.h primitives.h shaders/vs.glsl shaders/fs.glsl
+                    utils.h
+                    shaders/ads_fs.glsl shaders/ads_vs.glsl)
 
 target_link_libraries(gl_project PRIVATE
     Qt6::Core

@@ -55,6 +55,12 @@ void GLWidget::createShaders()
     stat &= shaders["basic"]->compileShaderFromFile("shaders/fs.glsl", GL_FRAGMENT_SHADER);
     stat &= shaders["basic"]->link();
     if (!stat) qFatal("Some problem with shader!");
+
+    shaders["ads"] = new GLSLProgram;
+    stat = shaders["ads"]->compileShaderFromFile("shaders/ads_vs.glsl", GL_VERTEX_SHADER);
+    stat &= shaders["ads"]->compileShaderFromFile("shaders/ads_fs.glsl", GL_FRAGMENT_SHADER);
+    stat &= shaders["ads"]->link();
+    if (!stat) qFatal("Some problem with shader!");
 }
 
 void GLWidget::createGeometry()
@@ -147,29 +153,6 @@ void GLWidget::resizeGL(int w, int h)
     ProjMat = glm::perspective(glm::radians(60.0f), aspect_ratio, 0.1f, 10.0f);
 }
 
-struct Planet{
-    float sun_rotation;
-    float sun_distance;
-    float self_rotation;
-    float tilt;
-    float scale;
-
-    glm::mat4 getMatrix(glm::mat4 origin, int frame){
-        glm::mat4 scale_vec = glm::scale(identity, glm::vec3(scale));
-
-        return getOffset(origin, frame) *  scale_vec;
-    }
-
-    glm::mat4 getOffset(glm::mat4 origin, int frame){
-        glm::mat4 tx = glm::translate(identity, glm::vec3(sun_distance, 0, 0));
-        glm::mat4 rot = glm::rotate(identity, glm::radians(frame * sun_rotation), Z_AXIS);
-        glm::mat4 rot_self = glm::rotate(identity, glm::radians(frame * self_rotation), Z_AXIS);
-        rot_self = glm::rotate(rot_self, glm::radians(tilt), Y_AXIS);
-
-        return origin * rot * tx * rot_self;
-    }
-};
-
 void GLWidget::paintGL()
 {
     glClearColor(0, 0, 0.1, 1);
@@ -180,19 +163,66 @@ void GLWidget::paintGL()
     glm::mat4 view = camera.matrix();
 
     if(shaders.contains("basic")) {
+        Frame box_frame;
+        box_frame.pos = {2, 0, 0};
+        Frame cone_frame;
+        cone_frame.pos = {0, 0, 2};
+
         shaders["basic"]->use();
         shaders["basic"]->setUniform("ViewMat", view);
         shaders["basic"]->setUniform("ProjectionMat", ProjMat);
 
-        auto box_transform = glm::scale(identity, {1.5, 1.5, 1.5});
-        shaders["basic"]->setUniform("ModelMat", box_transform);
+        auto box_scale = glm::scale(identity, {1.5, 1.5, 1.5});
+        shaders["basic"]->setUniform("ModelMat", box_frame.matrix() * box_scale);
         shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
         geometry["box"]->render();
 
+        auto cone_scale = glm::scale(identity, {1.5, 1.5, 1.5});
+        shaders["basic"]->setUniform("ModelMat", cone_frame.matrix() * cone_scale);
+        shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
+        geometry["cone"]->render();
+
     }
     else {
-        qDebug("WARNING: No shader program");
+        qDebug("WARNING: No basic shader program");
     }
+
+    if(shaders.contains("ads")){
+        Frame box_frame;
+        box_frame.pos = {-2, 0, 0};
+        Frame cone_frame;
+        cone_frame.pos = {0, 0, -2};
+
+        shaders["ads"]->use();
+        shaders["ads"]->setUniform("ViewMat", view);
+        shaders["ads"]->setUniform("ProjectionMat", ProjMat);
+
+
+        shaders["ads"]->setUniform("LightPos",     glm::vec3(2.0f, 3.0f, 2.0f));
+        shaders["ads"]->setUniform("LightColor",   glm::vec3(1.0f, 1.0f, 1.0f));
+        shaders["ads"]->setUniform("AmbientColor", glm::vec3(0.1f, 0.1f, 0.1f));
+        shaders["ads"]->setUniform("Shininess",    32.0f);
+
+        auto box_scale = glm::scale(identity, {1.5, 1.5, 1.5});
+        shaders["ads"]->setUniform("ModelMat", box_frame.matrix() * box_scale);
+        shaders["ads"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
+        geometry["box"]->render();
+
+
+        shaders["ads"]->setUniform("LightPos",     glm::vec3(2.0f, 3.0f, 2.0f));
+        shaders["ads"]->setUniform("LightColor",   glm::vec3(1.0f, 1.0f, 1.0f));
+        shaders["ads"]->setUniform("AmbientColor", glm::vec3(0.1f, 0.1f, 0.1f));
+        shaders["ads"]->setUniform("Shininess",    32.0f);
+
+        auto cone_scale = glm::scale(identity, {1.5, 1.5, 1.5});
+        shaders["ads"]->setUniform("ModelMat", cone_frame.matrix() * cone_scale);
+        shaders["ads"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
+        geometry["cone"]->render();
+    }
+    else {
+        qDebug("WARNING: No ads shader program");
+    }
+
 
     frame++;
 }

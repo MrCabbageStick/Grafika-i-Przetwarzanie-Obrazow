@@ -56,6 +56,12 @@ void GLSLProgram::use()
     glUseProgram(handle);
 }
 
+void GLSLProgram::setUniform(const char* name, float v){
+    GLint loc = glGetUniformLocation(handle, name);
+    if(loc != -1)
+        glUniform1f(loc, v);
+}
+
 void GLSLProgram::setUniform(const char* name, glm::vec3 v)
 {
     GLint loc = glGetUniformLocation(handle, name);

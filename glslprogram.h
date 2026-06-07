@@ -26,8 +26,9 @@ public:
     bool compileShaderFromFile(const char* filename, GLenum type);
     bool compileShaderFromString(const std::string& source, GLenum type);
     bool link();
-    void use();    
+    void use();
 
+    void setUniform(const char* name, float v);
     void setUniform(const char* name, glm::vec3 v);
     void setUniform(const char* name, glm::mat4 mat);
 
