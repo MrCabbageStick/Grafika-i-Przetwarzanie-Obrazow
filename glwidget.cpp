@@ -176,108 +176,18 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    Planet earth{
-        .sun_rotation = 1.0f,
-        .sun_distance = 0.25f,
-        .self_rotation = 1.5f,
-        .tilt = 0.23f,
-        .scale = 0.5f,
-    };
-
-    Planet moon{
-        .sun_rotation = 10.0f,
-        .sun_distance = 0.15f,
-        .self_rotation = -10.0f,
-        .tilt = 0,
-        .scale = 0.15f,
-    };
-
-    Planet mars{
-        .sun_rotation = 0.6f,
-        .sun_distance = 0.75f,
-        .self_rotation = 1.25f,
-        .tilt = 0,
-        .scale = 0.4f,
-    };
-
-    Planet phobos{
-        .sun_rotation = 7.0f,
-        .sun_distance = 0.15f,
-        .self_rotation = -7.0f,
-        .tilt = 0,
-        .scale = 0.15f,
-    };
-
-    Planet deimos{
-        .sun_rotation = 5.0f,
-        .sun_distance = 0.20f,
-        .self_rotation = -5.0f,
-        .tilt = 0,
-        .scale = 0.1f,
-    };
-
-    // glm::mat4 view = glm::translate(identity, glm::vec3(0, 0, -4));
-    // view = glm::rotate(view, 0.01f * pos_x, Y_AXIS);
-    // view = glm::rotate(view, 0.01f * pos_y, X_AXIS);
-    // view = glm::scale(view, glm::vec3(zoom));
-    // camera.pos.z = -7;
     processCamera();
     glm::mat4 view = camera.matrix();
-
-    glm::mat4 earth_offset = earth.getOffset(identity, frame);
-    glm::mat4 mat = earth.getMatrix(identity, frame);
-    glm::mat4 mat_moon = moon.getMatrix(earth_offset, frame);
-
-    glm::mat4 mars_offset = mars.getOffset(identity, frame);
-    glm::mat4 mat_mars = mars.getMatrix(identity, frame);
-    glm::mat4 mat_phobos = phobos.getMatrix(mars_offset, frame);
-    glm::mat4 mat_deimos = deimos.getMatrix(mars_offset, frame);
 
     if(shaders.contains("basic")) {
         shaders["basic"]->use();
         shaders["basic"]->setUniform("ViewMat", view);
         shaders["basic"]->setUniform("ProjectionMat", ProjMat);
 
-        // SUN
-        // shaders["basic"]->setUniform("ModelMat", glm::scale(identity, glm::vec3(0.75f)));
-        // geometry["main_axes"]->render();
-        // shaders["basic"]->setUniform("Color", glm::vec3(1, 1, 0));
-        // geometry["box"]->render();
-
-        // shaders["basic"]->setUniform("ModelMat", mat);
-        // shaders["basic"]->setUniform("Color", glm::vec3(0, 0.4, 1));
-        // geometry["box"]->render();
-
-        // shaders["basic"]->setUniform("ModelMat", mat_moon);
-        // shaders["basic"]->setUniform("Color", glm::vec3(0.8, 0.8, 0.9));
-        // geometry["box"]->render();
-
-        // shaders["basic"]->setUniform("ModelMat", mat_mars);
-        // shaders["basic"]->setUniform("Color", glm::vec3(1, 0.3, 0.0));
-        // geometry["box"]->render();
-
-        // shaders["basic"]->setUniform("ModelMat", mat_phobos);
-        // shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.8, 0.8));
-        // geometry["box"]->render();
-
-        // shaders["basic"]->setUniform("ModelMat", mat_deimos);
-        // shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
-        // geometry["box"]->render();
-
-        // Frame box_frame;
-        // box_frame.pos.x += 0.2f;
-        // auto s = box_frame.s();
-        // auto box_rot = glm::rotate(identity, frame * 0.01f, s);
-        // box_frame.forward = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.forward, 1)));
-        // box_frame.up = glm::normalize(glm::vec3(box_rot * glm::vec4(box_frame.up, 1)));
-
-        // shaders["basic"]->setUniform("ModelMat", box_frame.matrix());
-        // geometry["box"]->render();
-
-        Frame cone_frame;
-        shaders["basic"]->setUniform("ModelMat", cone_frame.matrix());
+        auto box_transform = glm::scale(identity, {1.5, 1.5, 1.5});
+        shaders["basic"]->setUniform("ModelMat", box_transform);
         shaders["basic"]->setUniform("Color", glm::vec3(0.9, 0.9, 0.8));
-        geometry["cone"]->render();
+        geometry["box"]->render();
 
     }
     else {
