@@ -5,6 +5,8 @@
 #include <QImage>
 
 #include "algorithm.h"
+#include "ui_hsldialog.h"
+#include "color_spaces.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,10 +14,34 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    hsl_dialog = new HslDialog(this);
+
     connect(ui->load_image_btn, SIGNAL(clicked(bool)), this, SLOT(load_image_pushed()));
     connect(ui->gamma_slider, SIGNAL(valueChanged(int)), SLOT(gamma_slider_changed(int)));
     connect(ui->contrast_slider, SIGNAL(valueChanged(int)), SLOT(contrast_slider_changed(int)));
     connect(ui->brightness_slider, SIGNAL(valueChanged(int)), SLOT(brightness_slider_changed(int)));
+
+    connect(ui->actionHSL, &QAction::triggered, this, [this]() {
+        hsl_dialog->show();
+        hsl_dialog->raise();      // bring to front if already open
+        hsl_dialog->activateWindow();
+    });
+
+    connect(hsl_dialog->ui->h_slider, &QSlider::valueChanged,
+            this, &MainWindow::hueSliderChanged);
+    connect(hsl_dialog->ui->s_slider, &QSlider::valueChanged,
+            this, &MainWindow::satSliderChanged);
+    connect(hsl_dialog->ui->l_slider, &QSlider::valueChanged,
+            this, &MainWindow::lightSliderChanged);
+
+    BGRA color = {123, 255, 9, 255};
+    Hsl color_hsl = rgb2hsl(color);
+    BGRA color_back = hsl2rgb(color_hsl);
+    qDebug()
+        << "Rgb: " << color.r << ", " << color.g << ", " << color.b
+        << " | Hsl: " << color_hsl.h << ", " << color_hsl.s << ", " << color_hsl.l
+        << " | Rgb: " << color_back.r << ", " << color_back.g << ", " << color_back.b
+        << "\n";
 
 }
 
@@ -74,4 +100,20 @@ void MainWindow::gamma_slider_changed(int value){
     apply_changes();
 }
 
+
+
+void MainWindow::on_actionHSL_triggered()
+{
+
+}
+
+/// values from 0 to 359, treat as degrees
+void MainWindow::hueSliderChanged(int value){
+}
+
+/// values from 0 to 99, treat as percents
+void MainWindow::satSliderChanged(int value){}
+
+/// values from 0 to 99, treat as percents
+void MainWindow::lightSliderChanged(int value){}
 

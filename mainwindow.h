@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QImage>
 
+#include "hsldialog.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -18,6 +20,8 @@ class MainWindow : public QMainWindow
     int d_brightness = 0;
     int d_contrast = 0;
     int d_gamma = 0;
+
+    HslDialog *hsl_dialog = nullptr;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -34,5 +38,14 @@ public slots:
     void contrast_slider_changed(int value);
     void gamma_slider_changed(int value);
 
+    /// values from 0 to 359, treat as degrees
+    void hueSliderChanged(int value);
+    /// values from 0 to 99, treat as percents
+    void satSliderChanged(int value);
+    /// values from 0 to 99, treat as percents
+    void lightSliderChanged(int value);
+
+private slots:
+    void on_actionHSL_triggered();
 };
 #endif // MAINWINDOW_H
