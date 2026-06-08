@@ -31,6 +31,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         tools.h
         labdialog.h labdialog.cpp labdialog.ui
         histogramdialog.h histogramdialog.cpp histogramdialog.ui
+        transformations.h
+        transformdialog.h transformdialog.cpp transformdialog.ui
 
     )
 # Define target properties for Android with Qt 6 as:

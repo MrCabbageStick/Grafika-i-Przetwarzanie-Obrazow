@@ -26,6 +26,12 @@
     <property name="text">
      <string>Original image</string>
     </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QLabel" name="edited_image">
     <property name="geometry">
@@ -38,6 +44,12 @@
     </property>
     <property name="text">
      <string>Edited image</string>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="load_image_btn">
@@ -172,9 +184,10 @@
    </widget>
    <widget class="QMenu" name="menuWindows">
     <property name="title">
-     <string>Windows</string>
+     <string>Tools</string>
     </property>
     <addaction name="actionHistogram"/>
+    <addaction name="actionTransformations"/>
    </widget>
    <addaction name="menu_Edit"/>
    <addaction name="menuWindows"/>
@@ -193,6 +206,11 @@
   <action name="actionHistogram">
    <property name="text">
     <string>Histogram</string>
+   </property>
+  </action>
+  <action name="actionTransformations">
+   <property name="text">
+    <string>Transform</string>
    </property>
   </action>
  </widget>

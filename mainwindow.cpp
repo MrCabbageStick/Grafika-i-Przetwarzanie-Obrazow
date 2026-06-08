@@ -10,6 +10,8 @@
 #include "color_spaces.h"
 #include "tools.h"
 #include "ui_labdialog.h"
+#include "ui_transformdialog.h"
+#include "transformations.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     hsl_dialog = new HslDialog(this);
     lab_dialog = new LabDialog(this);
+
+    transformDialog = new TransformDialog(this);
 
     connect(ui->load_image_btn, SIGNAL(clicked(bool)), this, SLOT(load_image_pushed()));
     connect(ui->gamma_slider, SIGNAL(valueChanged(int)), SLOT(gamma_slider_changed(int)));
@@ -45,6 +49,12 @@ MainWindow::MainWindow(QWidget *parent)
         histogramDialog->activateWindow();
     });
 
+    connect(ui->actionTransformations, &QAction::triggered, this, [this](){
+        transformDialog->show();
+        transformDialog->raise();      // bring to front if already open
+        transformDialog->activateWindow();
+    });
+
     connect(hsl_dialog->ui->h_slider, &QSlider::valueChanged,
             this, &MainWindow::hueSliderChanged);
     connect(hsl_dialog->ui->s_slider, &QSlider::valueChanged,
@@ -58,6 +68,15 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::aSliderChanged);
     connect(lab_dialog->ui->b_slider, &QSlider::valueChanged,
             this, &MainWindow::bSliderChanged);
+
+
+    connect(transformDialog->ui->degreeSlider, &QSlider::valueChanged, this, &MainWindow::rotationSliderChanged);
+    connect(transformDialog->ui->xTranslation, &QSpinBox::valueChanged, this, &MainWindow::xTranslationChanged);
+    connect(transformDialog->ui->yTranslation, &QSpinBox::valueChanged, this, &MainWindow::yTranslationChanged);
+    connect(transformDialog->ui->okCancel, &QDialogButtonBox::accepted, this, &MainWindow::commitTransform);
+    connect(transformDialog->ui->okCancel, &QDialogButtonBox::rejected, this, &MainWindow::cancelTransform);
+
+
 
     BGRA color = {123, 255, 9, 255};
     Hsl color_hsl = rgb2hsl(color);
@@ -108,10 +127,18 @@ void MainWindow::load_image_pushed(){
 
     qDebug() << "Loaded image: " << original_image;
     edited_image = QImage(original_image);
+    ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
 
     QPixmap pixmap = QPixmap::fromImage(original_image);
 
     ui->orignal_image->setPixmap(pixmap);
+
+
+    transformDialog->ui->xTranslation->setMaximum(edited_image.width());
+    transformDialog->ui->xTranslation->setMinimum(-edited_image.width());
+    transformDialog->ui->yTranslation->setMaximum(edited_image.height());
+    transformDialog->ui->yTranslation->setMinimum(-edited_image.height());
+
 
     update_histogram();
 }
@@ -307,6 +334,92 @@ void MainWindow::update_histogram(){
 
     histogram_image.flip();
     histogramDialog->ui->histogram_label->setPixmap(QPixmap::fromImage(histogram_image));
-
 }
+
+void MainWindow::rotationSliderChanged(int value){
+    auto radians = qDegreesToRadians((float)(value));
+    transform(transform_state.tx, transform_state.ty, radians);
+    transform_state.rot = radians;
+}
+
+void MainWindow::xTranslationChanged(int value){
+    transform(value, transform_state.ty, transform_state.rot);
+    transform_state.tx = value;
+}
+
+void MainWindow::yTranslationChanged(int value){
+    transform(transform_state.tx, value, transform_state.rot);
+    transform_state.ty = value;
+}
+
+void MainWindow::transform(int tx, int ty, float rot){
+    if(editing_copy == nullptr){
+        editing_copy = new QImage(edited_image);
+    }
+
+    auto source = QImage(*editing_copy);
+
+    edited_image.fill(0x00000000);
+
+    transform::XYPoint origin = {edited_image.width() / 2, edited_image.height() / 2};
+
+    for(int y = 0; y < edited_image.height(); y++){
+        // auto src_line = reinterpret_cast<const QRgb*>(source.constScanLine(y));
+        auto dst_line = reinterpret_cast<QRgb*>(edited_image.scanLine(y));
+
+        for(int x = 0; x < edited_image.width(); x++){
+            // get pixel from source with oposite transformation
+            // and put into destination at x, y
+            QRgb *dst_pixel = dst_line + x;
+
+            auto new_pixel_pos = transform::transform({x, y}, origin, {-tx, -ty}, -rot);
+
+            QRgb src_pixel;
+            if(
+                new_pixel_pos.x < edited_image.width() && new_pixel_pos.x >= 0
+                && new_pixel_pos.y < edited_image.height() && new_pixel_pos.y >= 0
+                ){
+                src_pixel = source.pixel(new_pixel_pos.x, new_pixel_pos.y);
+            }else{
+                src_pixel = 0x00000000;
+            }
+
+            *dst_pixel = src_pixel;
+        }
+    }
+
+    ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
+
+    update_histogram();
+}
+
+void MainWindow::commitTransform(){
+    transform_state = {0, 0, 0};
+    editing_copy = nullptr;
+
+    updateTransformSlider();
+}
+
+void MainWindow::cancelTransform(){
+    edited_image = *editing_copy;
+    delete editing_copy;
+    editing_copy = nullptr;
+    transform_state = {0, 0, 0};
+    update_histogram();
+    ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
+
+    updateTransformSlider();
+}
+
+void MainWindow::updateTransformSlider(){
+    transformDialog->ui->xTranslation->setValue(transform_state.tx);
+    transformDialog->ui->yTranslation->setValue(transform_state.ty);
+    transformDialog->ui->degreeSlider->setValue(qDegreesToRadians(transform_state.rot));
+}
+
+
+
+
+
+
 
