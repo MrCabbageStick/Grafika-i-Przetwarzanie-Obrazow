@@ -73,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(transformDialog->ui->degreeSlider, &QSlider::valueChanged, this, &MainWindow::rotationSliderChanged);
     connect(transformDialog->ui->xTranslation, &QSpinBox::valueChanged, this, &MainWindow::xTranslationChanged);
     connect(transformDialog->ui->yTranslation, &QSpinBox::valueChanged, this, &MainWindow::yTranslationChanged);
+    connect(transformDialog->ui->xScale, &QSpinBox::valueChanged, this, &MainWindow::xScaleChanged);
+    connect(transformDialog->ui->yScale, &QSpinBox::valueChanged, this, &MainWindow::yScaleChanged);
     connect(transformDialog->ui->okCancel, &QDialogButtonBox::accepted, this, &MainWindow::commitTransform);
     connect(transformDialog->ui->okCancel, &QDialogButtonBox::rejected, this, &MainWindow::cancelTransform);
 
@@ -338,21 +340,33 @@ void MainWindow::update_histogram(){
 
 void MainWindow::rotationSliderChanged(int value){
     auto radians = qDegreesToRadians((float)(value));
-    transform(transform_state.tx, transform_state.ty, radians);
+    transform(transform_state.tx, transform_state.ty, radians, transform_state.xScale, transform_state.yScale);
     transform_state.rot = radians;
 }
 
 void MainWindow::xTranslationChanged(int value){
-    transform(value, transform_state.ty, transform_state.rot);
+    transform(value, transform_state.ty, transform_state.rot, transform_state.xScale, transform_state.yScale);
     transform_state.tx = value;
 }
 
 void MainWindow::yTranslationChanged(int value){
-    transform(transform_state.tx, value, transform_state.rot);
+    transform(transform_state.tx, value, transform_state.rot, transform_state.xScale, transform_state.yScale);
     transform_state.ty = value;
 }
 
-void MainWindow::transform(int tx, int ty, float rot){
+void MainWindow::xScaleChanged(int value){
+    auto asFloat = value / 100.0f;
+    transform_state.xScale = asFloat;
+    transform(transform_state.tx, transform_state.ty, transform_state.rot, asFloat, transform_state.yScale);
+}
+
+void MainWindow::yScaleChanged(int value){
+    auto asFloat = value / 100.0f;
+    transform_state.yScale = asFloat;
+    transform(transform_state.tx, transform_state.ty, transform_state.rot, transform_state.xScale, asFloat);
+}
+
+void MainWindow::transform(int tx, int ty, float rot, float xScale, float yScale){
     if(editing_copy == nullptr){
         editing_copy = new QImage(edited_image);
     }
@@ -372,7 +386,7 @@ void MainWindow::transform(int tx, int ty, float rot){
             // and put into destination at x, y
             QRgb *dst_pixel = dst_line + x;
 
-            auto new_pixel_pos = transform::transform({x, y}, origin, {-tx, -ty}, -rot);
+            auto new_pixel_pos = transform::transformWithScale({x, y}, origin, {tx, ty}, rot, xScale, yScale);
 
             QRgb src_pixel;
             if(
@@ -394,7 +408,7 @@ void MainWindow::transform(int tx, int ty, float rot){
 }
 
 void MainWindow::commitTransform(){
-    transform_state = {0, 0, 0};
+    transform_state = {0, 0, 0, 1, 1};
     editing_copy = nullptr;
 
     updateTransformSlider();
@@ -404,7 +418,7 @@ void MainWindow::cancelTransform(){
     edited_image = *editing_copy;
     delete editing_copy;
     editing_copy = nullptr;
-    transform_state = {0, 0, 0};
+    transform_state = {0, 0, 0, 1, 1};
     update_histogram();
     ui->edited_image->setPixmap(QPixmap::fromImage(edited_image));
 
@@ -415,6 +429,8 @@ void MainWindow::updateTransformSlider(){
     transformDialog->ui->xTranslation->setValue(transform_state.tx);
     transformDialog->ui->yTranslation->setValue(transform_state.ty);
     transformDialog->ui->degreeSlider->setValue(qDegreesToRadians(transform_state.rot));
+    transformDialog->ui->xScale->setValue(transform_state.xScale * 100);
+    transformDialog->ui->yScale->setValue(transform_state.yScale * 100);
 }
 
 

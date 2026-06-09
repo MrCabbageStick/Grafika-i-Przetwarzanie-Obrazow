@@ -20,7 +20,7 @@ struct LabSliderStates{
 
 struct TransformState{
     int tx, ty;
-    float rot;
+    float rot, xScale, yScale;
 };
 
 QT_BEGIN_NAMESPACE
@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow
     int d_contrast = 0;
     int d_gamma = 0;
 
-    TransformState transform_state = {0, 0, 0};
+    TransformState transform_state = {0, 0, 0, 1, 1};
 
     HslDialog *hsl_dialog = nullptr;
     HslSliderStates current_hsl = {0, 0, 0};
@@ -68,7 +68,7 @@ private:
 
     void update_histogram();
 
-    void transform(int tx, int ty, float rot);
+    void transform(int tx, int ty, float rot, float xScale, float yScale);
     void commitTransform();
     void cancelTransform();
     void updateTransformSlider();
@@ -90,6 +90,8 @@ public slots:
     void rotationSliderChanged(int value);
     void xTranslationChanged(int value);
     void yTranslationChanged(int value);
+    void xScaleChanged(int value);
+    void yScaleChanged(int value);
 
 private slots:
     void on_actionHSL_triggered();

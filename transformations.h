@@ -49,6 +49,34 @@ XYPoint transform(XYPoint point, XYPoint origin, XYPoint translation, float radi
     return { (int)rx, (int)ry };
 }
 
+XYPoint transformWithScale(XYPoint point, XYPoint origin, XYPoint translation, float radians, float xScale, float yScale) {
+    float c = std::cos(radians);
+    float s = std::sin(radians);
+
+    int ox = origin.x;
+    int oy = origin.y;
+
+    // Undo translation
+    float px = point.x - translation.x;
+    float py = point.y - translation.y;
+
+    // Undo rotation around origin
+    px -= ox;
+    py -= oy;
+
+    float rx = px * c + py * s;  // inverse rotation (transposed)
+    float ry = -px * s + py * c;
+
+    // Undo scale around origin
+    rx /= xScale;
+    ry /= yScale;
+
+    rx += ox;
+    ry += oy;
+
+    return { (int)rx, (int)ry };
+}
+
 }
 
 #endif // TRANSFORMATIONS_H
